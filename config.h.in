@@ -1,0 +1,29 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  config.h.in
+ *
+ *    Description:  
+ *
+ *        Version:  1.0
+ *        Created:  24.06.2012 22:10:08
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Valery Volgutov (Valery Volgutov), valerii76@gmail.com
+ *        Company:  3VSoft
+ *
+ * =====================================================================================
+ */
+
+#if !defined (__CONFIG_H__)
+#define __CONFIG_H__
+
+#define MAJOR_VERSION @velocomp_VERSION_MAJOR@
+#define MINOR_VERSION @velocomp_VERSION_MINOR@
+
+#define MAKE_VERSION(x, y) (((x) & 0x0f) << 4 | ((y) & 0xf))
+
+uint8_t const FIRMWARE_VERSION PROGMEM = MAKE_VERSION (MAJOR_VERSION, MINOR_VERSION);
+
+#endif//__CONFIG_H__
