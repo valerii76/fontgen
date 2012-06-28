@@ -19,11 +19,11 @@
 #if !defined (__CONFIG_H__)
 #define __CONFIG_H__
 
-#define MAJOR_VERSION @velocomp_VERSION_MAJOR@
-#define MINOR_VERSION @velocomp_VERSION_MINOR@
+#define MAJOR_VERSION @fontgen_VERSION_MAJOR@
+#define MINOR_VERSION @fontgen_VERSION_MINOR@
 
 #define MAKE_VERSION(x, y) (((x) & 0x0f) << 4 | ((y) & 0xf))
 
-uint8_t const FIRMWARE_VERSION PROGMEM = MAKE_VERSION (MAJOR_VERSION, MINOR_VERSION);
+unsigned char const FIRMWARE_VERSION = MAKE_VERSION (MAJOR_VERSION, MINOR_VERSION);
 
 #endif//__CONFIG_H__
