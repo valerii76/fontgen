@@ -85,7 +85,7 @@ int main (int argc, char *argv[])
 
         for (i = 0; i < strlen (font_sample); ++i)
         {
-            int h;
+            int h, hh;
             index = FT_Get_Char_Index (g_face, font_sample[i]);
             CHECK_FT (FT_Load_Glyph (g_face, index, FT_LOAD_TARGET_MONO));
             CHECK_FT (FT_Get_Glyph (g_face->glyph, &glyph));
@@ -103,39 +103,42 @@ int main (int argc, char *argv[])
 
             printf ("    '%c', 0x%x, ", font_sample[i], ((h << 5) | (bitmap->width & 0x1F)));
 
-            for (k = 0; k < bitmap->width; ++k)
+            for (hh = 0; hh < h; ++hh)
             {
-                unsigned char b = 0;
-                for (j = 0; j < bitmap->rows; ++j)
+                int rows = hh < (h - 1) ? 8 : (bitmap->rows & 0x7);
+                for (k = 0; k < bitmap->width; ++k)
                 {
-                    int idx = k & 0x07;
-                    unsigned char buf = bitmap->buffer[j * bitmap->pitch + (k >> 3)];
-                    b |= (buf & (1 << idx) >> idx) << (j & 0x7);
+                    unsigned char b = 0;
+                    for (j = 0; j < rows; ++j)
+                    {
+                        int idx = k & 0x07;
+                        unsigned char buf = bitmap->buffer[(j + (hh << 3)) * bitmap->pitch + (k >> 3)];
+                        b |= ((buf & (1 << (7 - idx))) >> (7 - idx)) << (j & 0x7);
+                    }
+                    printf ("0x%x, ", b);
                 }
-
-                printf ("0x%x, ", b);
             }
             printf ("\n");
 
-            /*for (j = 0; j < bitmap->rows; ++j)*/
-            /*{*/
-                /*int w = 0;*/
-                /*int wb = bitmap->width / 8 + bitmap->width & 0x7 ? 1 : 0;*/
-                /*for (w = 0; w <= wb; ++w)*/
-                /*{*/
-                    /*int k = 8;*/
-                    /*int b = bitmap->buffer[j * bitmap->pitch + w];*/
-                    /*while (k--)*/
-                    /*{*/
-                        /*if ((b & 0x80))*/
-                            /*printf ("*");*/
-                        /*else*/
-                            /*printf (" ");*/
-                        /*b <<= 1;*/
-                    /*}*/
-                /*}*/
-                /*printf ("\n");*/
-            /*}*/
+            for (j = 0; j < bitmap->rows; ++j)
+            {
+                int w = 0;
+                int wb = bitmap->width / 8 + (bitmap->width & 0x7 ? 1 : 0);
+                for (w = 0; w < wb; ++w)
+                {
+                    int k = 8;
+                    int b = bitmap->buffer[j * bitmap->pitch + w];
+                    while (k--)
+                    {
+                        if ((b & 0x80))
+                            printf ("*");
+                        else
+                            printf (" ");
+                        b <<= 1;
+                    }
+                }
+                printf ("\n");
+            }
 
             FT_Done_Glyph (glyph);
         }
