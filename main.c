@@ -195,11 +195,7 @@ int main (int argc, char *argv[])
 
     sample_len = strlen (options.sample);
 
-    qsort (options.sample, strlen (options.sample), sizeof (char), compare);
-
-    for (i = 0; i < sample_len; ++i)
-        if (options.sample [i] == ' ')
-            --sample_len;
+    qsort (options.sample, sample_len, sizeof (char), compare);
 
     CHECK_FT (FT_Init_FreeType (&g_library));
     CHECK_FT (FT_New_Face (g_library, options.font_path, 0, &g_face));
@@ -219,14 +215,19 @@ int main (int argc, char *argv[])
     }
 
 
-    for (i = 0; i < strlen (options.sample); ++i)
+    for (i = 0; i < sample_len; ++i)
     {
         int h, hh;
+        int space = 0;
 
         if (options.sample [i] == ' ')
-            continue;
+            space = 1;
 
-        index = FT_Get_Char_Index (g_face, options.sample [i]);
+        if (!space)
+            index = FT_Get_Char_Index (g_face, options.sample [i]);
+        else
+            index = FT_Get_Char_Index (g_face, 'X');
+
         CHECK_FT (FT_Load_Glyph (g_face, index, FT_LOAD_TARGET_MONO));
         CHECK_FT (FT_Get_Glyph (g_face->glyph, &glyph));
 
@@ -256,6 +257,8 @@ int main (int argc, char *argv[])
                     for (w = 0; w < wb; ++w)
                     {
                         unsigned char b = bitmap->buffer[j * bitmap->pitch + w];
+                        if (space)
+                            b = 0;
                         fontgen_log ("0x%x, ", b);
                         ++total_bytes;
                         ++font_bytes;
@@ -277,16 +280,22 @@ int main (int argc, char *argv[])
                             unsigned char buf = bitmap->buffer[(j + (hh << 3)) * bitmap->pitch + (k >> 3)];
                             b |= ((buf & (1 << (7 - idx))) >> (7 - idx)) << (j & 0x7);
                         }
+                        if (space)
+                            b = 0;
                         fontgen_log ("0x%x, ", b);
                         ++total_bytes;
                         ++font_bytes;
                     }
                 }
             }
+            space = 0;
             fontgen_log ("\n");
         }
         else
         {
+            printf ("'%c': wh=%d:%d(%d)\n",
+                    options.sample [i], bitmap->width, bitmap->rows,
+                    (bitmap->rows >> 3) + (bitmap->rows & 0x7 ? 1 : 0));
             for (j = 0; j < bitmap->rows; ++j)
             {
                 int w = 0;
@@ -297,7 +306,7 @@ int main (int argc, char *argv[])
                     int b = bitmap->buffer[j * bitmap->pitch + w];
                     while (k--)
                     {
-                        if ((b & 0x80))
+                        if ((b & 0x80) && !space)
                             printf ("*");
                         else
                             printf (" ");
@@ -306,6 +315,7 @@ int main (int argc, char *argv[])
                 }
                 printf ("\n");
             }
+            printf ("\n");
         }
 
         FT_Done_Glyph (glyph);
