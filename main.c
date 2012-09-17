@@ -147,10 +147,11 @@ int parse_cmd (int argc, char *argv[], struct cmd_opts *opts)
         else if (req_params == 2)
         {
             opts->sample = argv [i];
+            ++req_params;
         }
     }
 
-    if (req_params != 2)
+    if (req_params != 3)
     {
         printf ("invalid command line\n");
         print_help ();
